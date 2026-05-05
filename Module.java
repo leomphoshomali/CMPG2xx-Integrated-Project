@@ -35,7 +35,28 @@ public class Module
         return faculty;
     }
     
+    public void setModuleName(String moduleName){
+        this.moduleName = moduleName;
+    }
     
+    public void setModuleCode(String moduleCode){
+        this.moduleCode = moduleCode;
+    }
+    public void setYearLevel(int yearLevel){
+        this.yearLevel = yearLevel;
+    }
+    public void setInstructor(String instructor){
+        this.instructor = instructor;
+    }
+    public void setFaculty(String faculty){
+        this.faculty = faculty;
+    }
+    
+    @Override
+    public String toString(){
+        String info = String.format("Module name: %s\nModule Code: %s\nInstructor: %s\nYear Level: %d\nFaculty: %s", moduleName, moduleCode, instructor, yearLevel, faculty);
+        return info;
+    }
     
     
 }
