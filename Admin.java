@@ -4,7 +4,7 @@ import java.util.ArrayList;
  * Creates and Deletes accounts for users of the App 
  */
 
-public class Admin extends Users 
+public class Admin extends User
 {
     //Fields  
     private int adminLevel;
