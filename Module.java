@@ -14,4 +14,28 @@ public class Module
         this.yearLevel = yearLevel;
         this.faculty = faculty;
     }
+    
+    public String getModuleName(){
+        return moduleName;
+    }
+    
+    public String getModuleCode(){
+        return moduleCode;
+    }
+    
+    public int getYearLevel(){
+        return yearLevel;
+    }
+    
+    public String getInstructor(){
+        return instructor;
+    }
+    
+    public String getFaculty(){
+        return faculty;
+    }
+    
+    
+    
+    
 }
