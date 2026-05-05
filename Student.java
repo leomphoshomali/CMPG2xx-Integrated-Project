@@ -44,6 +44,15 @@ public class Student extends User {
     }
 
     public boolean removeEnrolledModule(Module module) {
-        return enrolledModules.remove(module);
+        boolean isRemoved = false;
+        for (int i = 0; i < enrolledModules.size(); i++){
+            if (module.getModuleCode().equals(enrolledModules.get(i).getModuleCode())){
+                enrolledModules.remove(i);
+                isRemoved = true;
+                break;
+            }
+        }
+        
+        return isRemoved;
     }
 }
