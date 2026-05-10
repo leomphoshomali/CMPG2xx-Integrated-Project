@@ -1,67 +1,49 @@
 import java.util.ArrayList;
 /**
- * An Admin Class for that extends User class
- * Creates and Deletes accounts for users of the App 
+ * Updated version of Admin An  extends User class and impliments Academic Observer 
+ *  
  */
-
-public class Admin extends User
+public class Admin extends User implements AcademicObserver
 {
     //Fields  
-    private int adminLevel;
-    private ArrayList <String> permission;
+
+    private ArrayList<User> students;
     private String lastLoginTime;
     private String createdBy;
 
-    //Default construct 
-    public Admin()
+    public ArrayList<User> getAllStudents()
     {
-        ArrayList <String> Permission;
+        UserManager u = new UserManager();
+        ArrayList<User> allUsers = u.getUsers();
+        students = new ArrayList<>();
+        for (int i = 0; i < allUsers.size(); i++)
+        {
+            if (allUsers.get(i) instanceof Student)
+            {
+                User student = allUsers.get(i);
+                students.add(student);
+            }
+        }
+        return students;
     }
     
-    //Parametised Constructor 
-    public Admin(String firstName, String lastName, String userId, String role, String gender, String email, String password,int adminLevel, String lastLoginTime,String createdBy)
+    public String getStudentPerformance(Student student)
     {
-        super(firstName, lastName, userId, role, gender, email, password);
-        setAdminLevel(adminLevel);
-        setLastLoginTime(lastLoginTime);
-        setCreatedBy(createdBy);
-        //
-    }
+        String out = "";
+        for (int i =0; i < students.size(); i++){
+            if (students.get(i).getUserId().equals(student.getUserId()))
+            {
+                for (int k = 0; k < student.getEnrolledModules().size(); k++)
+                {
+                    
+                }
+            }
+        }
+        return out;
+    }  
     
-    // Setters 
-    
-    public void setAdminLevel(int adminLevel)
+    public Student findStudent(String studentId)
     {
-        this.adminLevel = adminLevel;
-    }
-    public void setLastLoginTime(String lastLoginTime)
-    {
-        this.lastLoginTime = lastLoginTime;
-    }
-     public void setCreatedBy(String createdBy)
-    {
-        this.createdBy = createdBy;
-    }
-    public void setPermission(ArrayList <String> permission)
-    {
-        this.permission = permission;
-    }
-    
-    //Getters
-    public int getAdminLevel()
-    {
-         return adminLevel;
-    }
-    public String getLastLoginTime()
-    {
-         return lastLoginTime;
-    }
-     public String getCreatedBy()
-    {
-         return createdBy;
-    }
-    public ArrayList <String> getPermission()
-    {
-        return permission;
+        return ((Student)students.get(0));
     }
 }
