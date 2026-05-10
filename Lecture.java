@@ -55,4 +55,65 @@ public class Lecture extends User implements AcademicObserver, Serializable
        this.module = module; 
     }
 
+    public ArrayList<User> getAllStudents()
+    {
+        UserManager u = new UserManager();
+        ArrayList<User> allUsers = u.getUsers();
+        students = new ArrayList<>();
+        for (int i = 0; i < allUsers.size(); i++)
+            {
+                if (allUsers.get(i) instanceof Student)
+                {
+                    User student = allUsers.get(i);
+                    students.add(student);
+                }
+            }
+            return students;
+    }
+
+    public String getStudentPerformance(Student student)
+    {
+        String out = " ";
+        for (int i = 0; i < students.size(); i++)
+            {
+                if (students.get(i).getUserId().equals(student.getUserId()))
+                {
+                    for (int k = 0; k < student.getEnrolledModules().size(); k++)
+                        {
+                        }
+                }
+            }
+            return out;
+    }
+
+    public void setTitle(String title)
+    {
+        this.title = title;
+    }
+
+    public String getTitle()
+    {
+        return title;
+    }
+
+    public Student findStudent(String studentId)
+    {
+        return ((Student)students.get(0));
+    }
+
+    public void sendAnnouncement(String title, String contentWords)
+    {
+        String moduleCode = module.getModuleCode();
+        String instructor = super.getFirstName() + " " + super.getLastName();
+        Announcement a = new Announcement(title, contentWords, moduleCode, instructor);
+        GUIManager gui = new GUIManager();
+        gui.addAnnouncement(a);
+    }
+
+    @Override
+    public String toString()
+    {
+        return super.toString();
+    }
+
 }
