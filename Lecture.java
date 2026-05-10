@@ -14,4 +14,45 @@ public class Lecture extends User implements AcademicObserver, Serializable
     {
         super(firstName, lastName, userid, role, gender, email, password);
     }
+
+    public int getYearLevel()
+    {
+        return yearLevel;
+    }
+
+    public void setYearLevel(int yearLevel)
+    {
+        this.yearLevel = yearLevel;
+    }
+
+    public String getDegree()
+    {
+        return degree;
+    }
+
+    public void setDegree(String degree)
+    {
+        this.degree = degree;
+    }
+
+    public String getFaculty()
+    {
+        return faculty;
+    }
+
+    public void setFaculty(String faculty)
+    {
+        this.faculty = faculty;
+    }
+
+    public Module getTeachingModule()
+    {
+        return module;
+    }
+
+    public void setTeachingModule(Module module)
+    {
+       this.module = module; 
+    }
+
 }
