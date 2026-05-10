@@ -1,14 +1,14 @@
-import java.Util.ArrayList;
+import java.util.ArrayList;
 import java.io.Serializable;
 
 public class Lecture extends User implements AcademicObserver, Serializable 
 {
-    Private int yearLevel;
+    private int yearLevel;
     private String degree;
     private Module module;
     private String faculty;
     private ArrayList<User>students;
-    private String tittle;
+    private String title;
 
     public Lecture(String firstName, String lastName, String userid, String role, String gender, String email, String password)
     {
@@ -80,6 +80,10 @@ public class Lecture extends User implements AcademicObserver, Serializable
                 {
                     for (int k = 0; k < student.getEnrolledModules().size(); k++)
                         {
+                            Module module = student.getEnrolledModules().get(k);
+
+                            out += "Module: " + module.getModuleCode() + "\n";
+                            out += "Module Name: " + module.getModuleName() + "\n";
                         }
                 }
             }
