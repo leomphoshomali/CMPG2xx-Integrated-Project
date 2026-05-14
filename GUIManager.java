@@ -1,4 +1,5 @@
-
+import javafx.scene.control.ComboBox;
+import java.util.ArrayList;
 public class GUIManager
 {
     private ArrayList<Announcement> announcements = new ArrayList<>();
