@@ -19,7 +19,12 @@ public class MainGUI extends Application
     private TextField txtfEmail;
     private TextField txtfPassword;
     private TextArea txtaBio;
+    private ComboBox<String> cbxGender;
+    private ComboBox<String> cbxRole;
     
+    private User user;
+    private GUIManager guiManager = new GUIManager();
+    private UserManager userManager = new UserManager();
     @Override
     public void start(Stage primaryStage){
         this.primaryStage = primaryStage;
@@ -73,5 +78,117 @@ public class MainGUI extends Application
         primaryStage.setResizable(false);
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
+    
+    private void handleShowLogin(ActionEvent event){
+        showLoginPage();
+    }
+    
+    private void handleAdminLogin(ActionEvent event){
+        showAdminLoginPage();
+    }
+    private void showAdminLoginPage(){
+        
+    }
+    private void handleShowSignUp(ActionEvent e){
+        showRegistrationPage();
+    }
+    //private void handleAdminLogin
+    
+    private void handleLoginSubmission(ActionEvent event){
+        String email = txtfEmail.getText();
+        String password = txtfPassword.getText();
+        
+        boolean validateEmail = guiManager.isInputValid(email);
+        boolean validatePass = guiManager.isInputValid(password);
+        
+        if (!validateEmail || !validatePass){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setContentText("Please fill in the missing inputs");
+            alert.showAndWait();
+        }
+        
+        User submit = userManager.validateUserSubmission(email, password);
+        
+        if (submit == null){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setContentText("Email or password doesn’t match any account.");
+            alert.showAndWait();
+        } else {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setContentText("Login successful! You will now be redirected to the home page.");
+            alert.showAndWait();
+            
+            user = submit;
+            
+            handlePageRole();
+        }
+    }
+    
+    private void initializeComboBoxes(){
+        cbxRole = guiManager.configureRoleComboBox();
+        cbxGender = guiManager.configureGenderComboBox();
+    }
+    
+    private void handleUserSubmission(ActionEvent e){
+        try{
+            String name = txtfFirstName.getText();
+            String surname = txtfLastName.getText();
+            String role = cbxRole.getValue();
+            String gender = cbxGender.getValue();
+            String email = txtfEmail.getText();
+            String password = txtfPassword.getText();
+            String bio = txtaBio.getText();
+            
+            //first make sure all inputs have been entered
+            ArrayList<String> data = new ArrayList<>();
+            data.add(name);
+            data.add(surname);
+            data.add(role);
+            data.add(gender);
+            data.add(email);
+            data.add(password);
+            
+            
+            boolean validate = false;
+            
+            for (int i = 0; i < data.size(); i++){
+                validate = guiManager.isInputValid(data.get(i));
+                if (!validate){
+                    throw new InvalidModuleSelectionException("Please fill in the missing inputs");
+                }
+            }
+            
+            if (txtfEmail.getText().contains("@") && txtfEmail.getText().contains(".") || txtfEmail.getText().length() < 5){
+                throw new UserNotFoundException("Invalid email");
+            }
+            //if sucessful
+            
+            
+            user = guiManager.createUser(name, surname, role, email, password, gender);
+            user.setBio(bio);
+            //user.setPasswordHash(password);
+            
+            
+            showModuleSubmissionPage();
+        }catch (InvalidModuleSelectionException cie){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setContentText(cie.getMessage());
+            alert.showAndWait();
+        } catch (Exception ex){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setContentText(ex.getMessage());
+            alert.showAndWait();
+        }
+    }
+    
+    private void showModuleSubmissionPage(){
+        if (user instanceof Student){
+            StudentGUI studentGUI = new StudentGUI(user);
+            studentGUI.start(primaryStage);
+        } else {
+            LectureGUI lectureGUI = new LectureGUI(user);
+            lectureGUI.start(primaryStage);
+        }
     }
 }
