@@ -1,3 +1,5 @@
+import java.io.Serializable;
+
 /**
  * Base class for module 
  * Implimented Fields 
@@ -6,7 +8,7 @@
  * And a toString method to display
  */
 
-public class Module  
+public class Module implements Serializable
 {
     private String moduleName;
     private String moduleCode;
