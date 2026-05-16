@@ -191,4 +191,81 @@ public class MainGUI extends Application
             lectureGUI.start(primaryStage);
         }
     }
+    
+    private void handlePageRole(){
+        if (user instanceof Student){
+            StudentGUI studentGUI = new StudentGUI(user);
+            studentGUI.handleLogin(primaryStage);
+        } else {
+            LectureGUI lectureGUI = new LectureGUI(user);
+            lectureGUI.handleLogin(primaryStage);
+        }
+    }
+    
+    private void handleShowSignUp(ActionEvent e){
+        showRegistrationPage();
+    }
+    
+    private void showPasswordResetPage(){
+        //
+    }
+    
+    private void handlePasswordReset(ActionEvent e){
+        
+    }
+    
+    private void showRegistrationPage(){
+        
+        
+        initializeTextFields();
+        GridPane mainLayout = new GridPane();
+        
+        initializeComboBoxes();
+        //labels
+        Label lblPageTitle = new Label("Register Page");
+        Label lblName = new Label("Name");
+        
+        Label lblSurname = new Label("Surname");
+        
+        Label lblEmail = new Label("Email");
+        
+        Label lblPassword = new Label("Password");
+        
+        Label lblBio = new Label("Add a bio (optional)");
+        
+        //buttons
+        Button btnLogin = new Button("Log in instead");
+        
+        Button btnSubmit = new Button("Submit");
+        
+        btnLogin.setOnAction(this::handleShowLogin);
+        btnSubmit.setOnAction(this::handleUserSubmission);
+        
+        
+        mainLayout.add(lblPageTitle, 1, 0);
+        mainLayout.add(lblName, 0, 1);
+        mainLayout.add(txtfFirstName, 0, 2);
+        mainLayout.add(lblSurname, 0, 3);
+        mainLayout.add(txtfLastName, 0, 4);
+        
+        mainLayout.add(cbxGender, 0, 5);
+        mainLayout.add(lblEmail, 0, 6);
+        mainLayout.add(txtfEmail, 0, 7);
+        mainLayout.add(lblPassword, 0, 8);
+        mainLayout.add(txtfPassword, 0, 9);
+        mainLayout.add(cbxRole, 0, 10);
+        mainLayout.add(lblBio, 0, 11);
+        mainLayout.add(txtaBio, 0, 12, 3, 3);
+        mainLayout.add(btnLogin, 5, 13);
+        mainLayout.add(btnSubmit, 6, 13);
+        
+        mainLayout.setVgap(15);
+        mainLayout.setHgap(15);
+        mainLayout.setStyle("-fx-padding:20px;");
+        
+        Scene scene = new Scene(mainLayout);
+        primaryStage.setResizable(false);
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
 }
