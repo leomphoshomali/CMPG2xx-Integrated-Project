@@ -1,18 +1,21 @@
 import java.util.ArrayList;
 import java.io.Serializable;
+import javafx.scene.control.Alert;
 
 public class Lecture extends User implements AcademicObserver, Serializable 
 {
     private int yearLevel;
     private String degree;
     private Module module;
-    private String faculty;
-    private ArrayList<User>students;
+    
+    private ArrayList<User> students = new ArrayList<>();;
     private String title;
+    private UserManager userManager = new UserManager();
 
     public Lecture(String firstName, String lastName, String userid, String role, String gender, String email, String password)
     {
         super(firstName, lastName, userid, role, gender, email, password);
+        module = new Module();
     }
 
     public int getYearLevel()
@@ -35,15 +38,6 @@ public class Lecture extends User implements AcademicObserver, Serializable
         this.degree = degree;
     }
 
-    public String getFaculty()
-    {
-        return faculty;
-    }
-
-    public void setFaculty(String faculty)
-    {
-        this.faculty = faculty;
-    }
 
     public Module getTeachingModule()
     {
@@ -55,39 +49,47 @@ public class Lecture extends User implements AcademicObserver, Serializable
        this.module = module; 
     }
 
-    public ArrayList<User> getAllStudents()
-    {
+    public ArrayList<User> getAllStudents(){
+        return students;
+    }
+     public void addAllStudents(){
         UserManager u = new UserManager();
         ArrayList<User> allUsers = u.getUsers();
         students = new ArrayList<>();
-        for (int i = 0; i < allUsers.size(); i++)
-            {
-                if (allUsers.get(i) instanceof Student)
-                {
-                    User student = allUsers.get(i);
-                    students.add(student);
+        
+        ArrayList<Module> studentModules = new ArrayList<>();
+        for (int i = 0; i < allUsers.size(); i++){
+            User student = allUsers.get(i);
+            
+            if (student instanceof Student){
+                studentModules = ((Student)allUsers.get(i)).getEnrolledModules();
+                for (int k = 0; k < studentModules.size(); k++){
+                    if (studentModules.get(k).getModuleCode().equals(module.getModuleCode())){
+                        students.add(student);
+                    }
                 }
             }
-            return students;
+        }
+         
     }
 
-    public String getStudentPerformance(Student student)
-    {
-        String out = " ";
-        for (int i = 0; i < students.size(); i++)
-            {
-                if (students.get(i).getUserId().equals(student.getUserId()))
-                {
-                    for (int k = 0; k < student.getEnrolledModules().size(); k++)
-                        {
-                            Module module = student.getEnrolledModules().get(k);
 
-                            out += "Module: " + module.getModuleCode() + "\n";
-                            out += "Module Name: " + module.getModuleName() + "\n";
-                        }
+    public String getStudentPerformance(User student){
+        User searchStudent = findStudent(student.getUserId());
+        String info = "";
+        
+        if (searchStudent != null){
+            ArrayList<StudentAssignment> assignments = ((Student)searchStudent).getAssignments();
+            if (assignments != null){
+                for (int i = 0; i < assignments.size(); i++){
+                    info += "Module: " + assignments.get(i).getModuleCode() + "Mark obtained: " + assignments.get(i).getMarksObtained() + "\n";
+                    
                 }
             }
-            return out;
+            
+        }
+        
+        return info;
     }
 
     public void setTitle(String title)
@@ -100,19 +102,51 @@ public class Lecture extends User implements AcademicObserver, Serializable
         return title;
     }
 
-    public Student findStudent(String studentId)
-    {
-        return ((Student)students.get(0));
+       public User findStudent(String studentId){
+        User student = null;
+        for (int i = 0; i < students.size(); i++){
+            if (students.get(i).getUserId().equals(studentId)){
+                student = students.get(i);
+            }
+        }
+        return student;
     }
 
-    public void sendAnnouncement(String title, String contentWords)
-    {
+
+    public void sendAnnouncement(Announcement a){
         String moduleCode = module.getModuleCode();
-        String instructor = super.getFirstName() + " " + super.getLastName();
-        Announcement a = new Announcement(title, contentWords, moduleCode, instructor);
-        GUIManager gui = new GUIManager();
-        gui.addAnnouncement(a);
+        String instructor = super.getFirstName() + " " + super.getLastName(); 
+        
+        //GUIManager gui = new GUIManager();
+        //gui.addAnnouncement(a);
+        
+        //userManager.loadUsers();
+        ArrayList<User> users = userManager.getUsers();
+        try{
+            if (!users.isEmpty()){
+                for (int i = 0; i < users.size(); i++){
+                //((Student)users.get(i)).addAnnuncement(a);
+                User user = users.get(i);
+                if (user instanceof Student){
+                    ArrayList<Module> modules = ((Student)user).getEnrolledModules();
+                    
+                    for (int k = 0; k < modules.size(); k++){
+                        if (modules.get(k).getModuleCode().equals(module.getModuleCode())){
+                            ((Student)user).addAnnuncement(a);
+                        }
+                    }
+                }
+                }
+                userManager.saveUsers();
+            }
+        } catch(Exception e){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setContentText(e.getMessage());
+            alert.showAndWait();
+        }
+        
     }
+    
 
     @Override
     public String toString()
