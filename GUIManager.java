@@ -4,12 +4,14 @@ import javafx.scene.control.Alert;
 import java.io.Serializable;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import org.mindrot.jbcrypt.BCrypt; //Added this for BCrypt
 
 public class GUIManager implements Serializable
 {
     //private static ArrayList<Announcement> announcements = new ArrayList<>();
     private UserManager userManager = new UserManager();
     private ModuleManager moduleManager = new ModuleManager();
+    
     //private FileService files = new FileService();
     
     
@@ -20,7 +22,7 @@ public class GUIManager implements Serializable
         } 
         if (in.trim().equals("")){
             return false;
-        } if (in.equalsIgnoreCase("Select your role") || in.equalsIgnoreCase("Select your gender")) {
+        } if (in.equalsIgnoreCase("Select your role") || in.equalsIgnoreCase("Select your gender") || in.equalsIgnoreCase("Select your module")) {
             return false;
         }
         if (in.equalsIgnoreCase("Select your year level") || in.equalsIgnoreCase("Select your faculty")) {
@@ -151,9 +153,9 @@ public class GUIManager implements Serializable
         ComboBox<String> m = new ComboBox<>();
         m.setValue("Tasks");
         if (s instanceof Student){
-            m.getItems().addAll("Pending tasks", "Completed tasks");
+            m.getItems().addAll("Pending tasks");
         } else {
-            m.getItems().addAll("Add new task", "Uploaded tasks");
+            m.getItems().addAll("Add new task");
         }
             
         return m;
@@ -168,7 +170,7 @@ public class GUIManager implements Serializable
         ComboBox<String> m = new ComboBox<>();
         m.setValue("Modules");
         
-        m.getItems().addAll("View modules", "Edit modules");
+        m.getItems().addAll("View modules");
         return m;
     }
     
@@ -178,20 +180,23 @@ public class GUIManager implements Serializable
     
     public User createUser(String name, String surname, String role, String email, String password, String gender){
         String userId = userManager.generateUserId(role);
-        User u;
+        String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
+        User newUser = null;
         if (role.equalsIgnoreCase("Student")){
             
-            u = new Student(name, surname, userId, role, gender, email, password);
+            newUser = new Student(name, surname, userId, role, gender, email, hashedPassword);
+            
+        } else if (role.equalsIgnoreCase("Lecture")){
+            newUser = new Lecture(name, surname, userId, role, gender, email, hashedPassword);
             
         } else {
-            u = new Lecture(name, surname, userId, role, gender, email, password);
-            
+            newUser = new Admin(name, surname, userId, role, gender, email, hashedPassword);
         }
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setContentText("Your new UserID is ('" + userId + "').");
         alert.showAndWait();
         
-        return u;
+        return newUser;
         
     }
     
@@ -264,7 +269,8 @@ public class GUIManager implements Serializable
             if (module.equals(modules.get(i).getModuleName())){
                 userModule = modules.get(i);
                 ((Lecture)user).setTeachingModule(userModule);
-                modules.get(i).setInstructor(user.getFirstName() + user.getLastName());
+                moduleManager.getModules().get(i).setInstructor(user.getFirstName() + user.getLastName());
+                moduleManager.saveModules();
                 break;
             }
         }
@@ -285,6 +291,7 @@ public class GUIManager implements Serializable
                 
                 if (userModules.get(i).equals(module.getModuleName())){
                         ((Student)u).addEnrolledModule(module);
+                        
                     }
                 } 
             }
@@ -330,37 +337,93 @@ public class GUIManager implements Serializable
         userManager.saveUsers();
     }
     
-    public boolean validatePassword(String password){
-        if (password.length() < 12){
+    public boolean validatePassword(String password) {
+        if (password == null || password.length() < 12) {
             return false;
         }
-        String[] specialCharacters = {"@", "$", "#", "&"};
-        boolean found = false;
-        for (int i = 0; i < specialCharacters.length; i++){
-            if (password.contains(specialCharacters[i])){
-                found = true;
-                break;
+    
+        String specialCharacters = "@$#&";
+    
+        boolean hasSpecial = false;
+        boolean hasUpper = false;
+        boolean hasLower = false;
+    
+        for (int i = 0; i < password.length(); i++) {
+            char c = password.charAt(i);
+    
+            if (specialCharacters.indexOf(c) != -1) {
+                hasSpecial = true;
+            }
+            if (Character.isUpperCase(c)) {
+                hasUpper = true;
+            }
+            if (Character.isLowerCase(c)) {
+                hasLower = true;
             }
         }
-        return false;
+    
+        boolean isValid = false;
+    
+        if (hasSpecial && hasUpper && hasLower) {
+            isValid = true;
+        }
+    
+        return isValid;
     }
     
-    public boolean validateEmail(){
-        return true;
+    public boolean validateEmail(String email){
+        if (email.contains("@") && email.contains(".") && email.length() > 5){
+            return true;
+        } else {
+            return false;
+        }
     }
     
     public ArrayList<User> searchUser(String search){
-        String[] searchKeyWords = search.split(" ");
-        ArrayList<User> users = new ArrayList<>();
+    ArrayList<User> users = new ArrayList<>();
+    String[] searchKeyWords = search.split(" ");
+    ArrayList<String> unique = new ArrayList<>();
+    
+    
+    for (int i = 0; i < searchKeyWords.length; i++) {
+        boolean exists = false;
+
+        for (int j = 0; j < unique.size(); j++) {
+            if (searchKeyWords[i].equalsIgnoreCase(unique.get(j))) {
+                exists = true;
+                break;
+            }
+        }
+
+        if (!exists) {
+            unique.add(searchKeyWords[i]);
+        }
+    }
+
         
-        for (int i = 0; i < searchKeyWords.length; i++){
-            for (int j = 0; j < userManager.getUsers().size(); j++){
-                if (userManager.getUsers().get(j).toString().contains(searchKeyWords[i])){
-                    users.add(userManager.getUsers().get(j));
+    for (int i = 0; i < unique.size(); i++){
+        for (int j = 0; j < userManager.getUsers().size(); j++){
+            User u = userManager.getUsers().get(j);
+
+            if (u.toString().toLowerCase().contains(unique.get(i).toLowerCase())){
+                
+                
+                boolean alreadyAdded = false;
+                for (int k = 0; k < users.size(); k++) {
+                    if (users.get(k).equals(u)) {
+                        alreadyAdded = true;
+                        break;
+                    }
+                }
+
+                if (!alreadyAdded) {
+                    users.add(u);
                 }
             }
         }
-        return users;
+    }
+    
+    return users;
     }
     
     
