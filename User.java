@@ -88,11 +88,21 @@ public abstract class User
     public String getRole(){
         return role;
     }
+      @Override
+        public int compareTo(User other) {
     
-    @Override
-    public String toString(){
-        String out = String.format("Name & Surname: %s\nUserId: %s\nRole: %s\nGender: %s", (firstName + " " + lastName), userId, role, gender);
+        String fullName = firstName + " " + lastName;
+        String otherFullName = other.getFirstName() +  " " + other.getLastName();
         
+        int compare = fullName.compareTo(otherFullName);
+        return compare;
+    }
+    
+       @Override
+        public String toString(){
+        //String out = String.format("Name & Surname: %s\n\n\nUserID: %s\n\n\nRole: %s\n\n\nGender: %s\n\n\nBio: %s\n\n\nFaculty:%s", (firstName.toLowerCase() + " " + lastName.toLowerCase()), userId.toLowerCase(), role.toLowerCase(), gender.toLowerCase(), bio.toLowerCase(), faculty.toLowerCase());
+        String out = firstName + lastName + userId + faculty + role + gender + bio;
+        out = out.toLowerCase();
         return out;
     }
 }
