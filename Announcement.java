@@ -1,6 +1,6 @@
-import java.io.Serializable;
+ 
 
-public class Announcement implements Serializable
+public class Announcement 
 {
     String title;
     String type;
