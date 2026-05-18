@@ -10,6 +10,18 @@ import javafx.scene.control.Button;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.PasswordField;
+
+//**Notes
+//in the start()
+//initialize textfields in the start method
+//set the current primaryStage to the one passed in the parameter in start()
+//================
+//in showLoginPage():
+//scene should be set to 300, 300, 
+//padding must be set to 20
+//hgap should be 20
+//==============
 
 public class MainGUI extends Application
 {
@@ -17,18 +29,25 @@ public class MainGUI extends Application
     private TextField txtfFirstName;
     private TextField txtfLastName;
     private TextField txtfEmail;
-    private TextField txtfPassword;
+    private TextField txtfUserID;
+    private PasswordField txtfPassword;
     private TextArea txtaBio;
+    
     private ComboBox<String> cbxGender;
     private ComboBox<String> cbxRole;
     
     private User user;
     private GUIManager guiManager = new GUIManager();
     private UserManager userManager = new UserManager();
+    
     @Override
     public void start(Stage primaryStage){
         this.primaryStage = primaryStage;
+        ModuleManager moduleManager = new ModuleManager();
+        //moduleManager.loadModulesInitial();
+        moduleManager.loadModules();
         
+        userManager.loadUsers();
         initializeTextFields();
         showLoginPage();
     }
@@ -36,8 +55,9 @@ public class MainGUI extends Application
     private void initializeTextFields(){
         txtfFirstName = new TextField();
         txtfLastName = new TextField();
+        txtfUserID = new TextField();
         txtfEmail = new TextField();
-        txtfPassword = new TextField();
+        txtfPassword = new PasswordField();
         txtaBio = new TextArea();
         txtaBio.setText("Hello there! I am using StudyEazzy!");
     }
@@ -48,16 +68,16 @@ public class MainGUI extends Application
         Scene scene = new Scene(pane);
         
         Label lblTitle = new Label("Login Page");
-        Label lblEmail = new Label("Email");
+        Label lblUserID = new Label("UserID");
         Label lblPassword = new Label("Password");
         Label lblForgotPassword = new Label("Forgot password?");
         
         Button btnLogin = new Button("Login");
         Button btnRegister = new Button("Register instead");
         Button btnResetPassword = new Button("Reset password");
+        Button btnExit = new Button("Exit");
+        btnExit.setOnAction(this::handleExit);
         
-        Button btnAdmin = new Button("Admin login");
-        btnAdmin.setOnAction(this::handleAdminLogin);
         pane.setHgap(15);
         pane.setVgap(15);
         btnRegister.setOnAction(this::handleShowSignUp);
@@ -66,18 +86,23 @@ public class MainGUI extends Application
          //***
         pane.setStyle("-fx-padding: 20px;");//
         pane.add(lblTitle, 1, 0);
-        pane.add(lblEmail, 0, 1);
-        pane.add(txtfEmail, 2, 1);
+        pane.add(lblUserID, 0, 1);
+        pane.add(txtfUserID, 2, 1);
         pane.add(lblPassword, 0, 2);
         pane.add(txtfPassword, 2, 2);
+        pane.add(btnExit, 3, 6);
         pane.add(btnLogin, 3, 3);
         pane.add(lblForgotPassword, 3, 4);
         pane.add(btnResetPassword, 4, 4);
         pane.add(btnRegister, 3, 5);
-        pane.add(btnAdmin, 4, 5);
+        
         primaryStage.setResizable(false);
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
+    
+    private void handleExit(ActionEvent event){
+        System.exit(0);
     }
     
     private void handleShowLogin(ActionEvent event){
@@ -90,38 +115,52 @@ public class MainGUI extends Application
     private void showAdminLoginPage(){
         
     }
-    private void handleShowSignUp(ActionEvent e){
-        showRegistrationPage();
-    }
+    
     //private void handleAdminLogin
     
     private void handleLoginSubmission(ActionEvent event){
-        String email = txtfEmail.getText();
-        String password = txtfPassword.getText();
-        
-        boolean validateEmail = guiManager.isInputValid(email);
-        boolean validatePass = guiManager.isInputValid(password);
-        
-        if (!validateEmail || !validatePass){
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setContentText("Please fill in the missing inputs");
-            alert.showAndWait();
-        }
-        
-        User submit = userManager.validateUserSubmission(email, password);
-        
-        if (submit == null){
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setContentText("Email or password doesn’t match any account.");
-            alert.showAndWait();
-        } else {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setContentText("Login successful! You will now be redirected to the home page.");
-            alert.showAndWait();
+        try{
+            String id = txtfUserID.getText();
+            String password = txtfPassword.getText();
             
-            user = submit;
+            boolean validateEmail = guiManager.isInputValid(id);
+            boolean validatePass = guiManager.isInputValid(password);
             
-            handlePageRole();
+            if (!validateEmail || !validatePass){
+                throw new UserNotFoundException("Please fill in the missing inputs");
+            } 
+            
+            User submit = userManager.validateUserSubmission(id, password);
+
+            if (userManager.isAccountLocked()) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setContentText("Account locked for 15 minutes.");
+                alert.showAndWait();
+                return;
+            }
+            
+            
+            
+            if (submit == null){
+                throw new UserNotFoundException("UserId or password doesn’t match any account.");
+                
+            } else {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setContentText("Login successful! You will now be redirected to the home page.");
+                alert.showAndWait();
+                
+                user = submit; //S-65212628
+                
+                handlePageRole();
+            }
+        } catch(UserNotFoundException unfe){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setContentText(unfe.getMessage());
+            alert.showAndWait();
+        } catch (Exception e){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setContentText(e.getMessage());
+            alert.showAndWait();
         }
     }
     
@@ -158,9 +197,14 @@ public class MainGUI extends Application
                     throw new InvalidModuleSelectionException("Please fill in the missing inputs");
                 }
             }
+            boolean validateEmail = guiManager.validateEmail(txtfEmail.getText());
             
-            if (txtfEmail.getText().contains("@") && txtfEmail.getText().contains(".") || txtfEmail.getText().length() < 5){
-                throw new UserNotFoundException("Invalid email");
+            if (!validateEmail){
+                throw new UserNotFoundException("Please enter a valid email");
+            } 
+            
+            if (!guiManager.validatePassword(password)){
+                throw new UserNotFoundException("Please enter a valid password");
             }
             //if sucessful
             
@@ -189,16 +233,19 @@ public class MainGUI extends Application
         } else {
             LectureGUI lectureGUI = new LectureGUI(user);
             lectureGUI.start(primaryStage);
-        }
+        } 
     }
     
     private void handlePageRole(){
         if (user instanceof Student){
             StudentGUI studentGUI = new StudentGUI(user);
             studentGUI.handleLogin(primaryStage);
-        } else {
+        } else if (user instanceof Lecture) {
             LectureGUI lectureGUI = new LectureGUI(user);
             lectureGUI.handleLogin(primaryStage);
+        } else {
+            AdminGUI adminGUI = new AdminGUI(user);
+            adminGUI.start(primaryStage);
         }
     }
     
@@ -216,6 +263,12 @@ public class MainGUI extends Application
     
     private void showRegistrationPage(){
         
+        Label lblPasswordRequirements = new Label(
+        "Password Requirements:\n" +
+        "Must be at least 12 characters long\n" +
+        "Must contain at least one uppercase letter (A–Z)\n" +
+        "Must contain at least one lowercase letter (a–z)\n" +
+        "Must contain at least one special character (@, $, #, &)");
         
         initializeTextFields();
         GridPane mainLayout = new GridPane();
@@ -247,24 +300,24 @@ public class MainGUI extends Application
         mainLayout.add(txtfFirstName, 0, 2);
         mainLayout.add(lblSurname, 0, 3);
         mainLayout.add(txtfLastName, 0, 4);
-        
+        mainLayout.add(lblPasswordRequirements, 0, 8, 6, 6);
         mainLayout.add(cbxGender, 0, 5);
         mainLayout.add(lblEmail, 0, 6);
         mainLayout.add(txtfEmail, 0, 7);
-        mainLayout.add(lblPassword, 0, 8);
-        mainLayout.add(txtfPassword, 0, 9);
-        mainLayout.add(cbxRole, 0, 10);
-        mainLayout.add(lblBio, 0, 11);
-        mainLayout.add(txtaBio, 0, 12, 3, 3);
-        mainLayout.add(btnLogin, 5, 13);
-        mainLayout.add(btnSubmit, 6, 13);
+        mainLayout.add(lblPassword, 0, 16);
+        mainLayout.add(txtfPassword, 0, 17);
+        mainLayout.add(cbxRole, 0, 18);
+        mainLayout.add(lblBio, 0, 19);
+        mainLayout.add(txtaBio, 0, 20, 3, 3);
+        mainLayout.add(btnLogin, 5, 21);
+        mainLayout.add(btnSubmit, 6, 22);
         
         mainLayout.setVgap(15);
         mainLayout.setHgap(15);
         mainLayout.setStyle("-fx-padding:20px;");
         
         Scene scene = new Scene(mainLayout);
-        primaryStage.setResizable(false);
+        primaryStage.setResizable(true);
         primaryStage.setScene(scene);
         primaryStage.show();
     }
