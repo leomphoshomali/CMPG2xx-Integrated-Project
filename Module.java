@@ -1,5 +1,6 @@
+import java.io.Serializable;
 
-public class Module
+public class Module implements Serializable
 {
     private String moduleName;
     private String moduleCode;
@@ -7,10 +8,21 @@ public class Module
     private int yearLevel;
     private String faculty;
     
-    public Module(String moduleName, String moduleCode, String instructor, int yearLevel, String faculty){
+    public Module(){
+        
+    }
+    
+    public Module(String moduleName, String moduleCode, String faculty, String instructor, int yearLevel){
         this.moduleName = moduleName;
         this.moduleCode = moduleCode;
         this.instructor = instructor;
+        this.yearLevel = yearLevel;
+        this.faculty = faculty;
+    }
+    
+    public Module(String moduleName, String moduleCode, String faculty, int yearLevel){
+        this.moduleName = moduleName;
+        this.moduleCode = moduleCode;
         this.yearLevel = yearLevel;
         this.faculty = faculty;
     }
