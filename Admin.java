@@ -10,40 +10,74 @@ public class Admin extends User implements AcademicObserver
     private ArrayList<User> students;
     private String lastLoginTime;
     private String createdBy;
-
-    public ArrayList<User> getAllStudents()
+// Setters
+    public void setLastLoginTime(String lastLoginTime)
     {
-        UserManager u = new UserManager();
-        ArrayList<User> allUsers = u.getUsers();
-        students = new ArrayList<>();
-        for (int i = 0; i < allUsers.size(); i++)
-        {
-            if (allUsers.get(i) instanceof Student)
-            {
-                User student = allUsers.get(i);
-                students.add(student);
-            }
-        }
+        this.lastLoginTime = lastLoginTime;
+    }
+     public void setCreatedBy(String createdBy)
+    {
+        this.createdBy = createdBy;
+    }
+
+
+    //getters
+    public ArrayList<User> getAllStudents(){
+        addAllStudents();
         return students;
     }
-    
-    public String getStudentPerformance(Student student)
+    public String getLastLoginTime()
     {
-        String out = "";
-        for (int i =0; i < students.size(); i++){
-            if (students.get(i).getUserId().equals(student.getUserId()))
-            {
-                for (int k = 0; k < student.getEnrolledModules().size(); k++)
-                {
+         return lastLoginTime;
+    }
+     public String getCreatedBy()
+    {
+         return createdBy;
+    }
+    
+    
+      public String getStudentPerformance(User student){
+        User searchStudent = findStudent(student.getUserId());
+        String info = "";
+        
+        if (searchStudent != null){
+            ArrayList<StudentAssignment> assignments = ((Student)searchStudent).getAssignments();
+            if (assignments != null){
+                for (int i = 0; i < assignments.size(); i++){
+                    info += "Module: " + assignments.get(i).getModuleCode() + "Mark obtained: " + assignments.get(i).getMarksObtained() + "\n";
                     
                 }
             }
+            
         }
-        return out;
-    }  
+        
+        return info;
+    }
     
-    public Student findStudent(String studentId)
-    {
-        return ((Student)students.get(0));
+    
+    public User findStudent(String studentId){
+        User student = null;
+        for (int i = 0; i < students.size(); i++){
+            if (students.get(i).getUserId().equals(studentId)){
+                student = students.get(i);
+            }
+        }
+        return student;
+    }
+
+    public void addAllStudents(){
+        UserManager u = new UserManager();
+        ArrayList<User> allUsers = u.getUsers();
+        students = new ArrayList<>();
+        
+        ArrayList<Module> studentModules = new ArrayList<>();
+        for (int i = 0; i < allUsers.size(); i++){
+            User student = allUsers.get(i);
+            
+            if (student instanceof Student){
+                students.add(student);
+            }
+        }
+         
     }
 }
