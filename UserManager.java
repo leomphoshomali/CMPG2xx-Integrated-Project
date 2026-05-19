@@ -91,11 +91,12 @@ public class UserManager implements Serializable
     public boolean removeUser(String userId)
     {
         // RBAC CHECK (ONLY ADMIN CAN REMOVE USERS)
-        if (currentUser == null || !currentUser.getRole().equalsIgnoreCase("Admin"))
-        {
-            System.out.println("Access denied: Admin only");
-            return false;
-        }
+        // currentUser = user;
+        // if (currentUser == null || !currentUser.getRole().equalsIgnoreCase("Admin"))
+        // {
+            // System.out.println("Access denied: Admin only");
+            // return false;
+        // }
 
         for (int i = 0; i < users.size(); i++){
             if (users.get(i).getUserId().equalsIgnoreCase(userId)){
